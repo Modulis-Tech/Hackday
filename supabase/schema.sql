@@ -78,8 +78,17 @@ create or replace function public.refresh_final_scores() returns void language s
 $$;
 
 create or replace function public.refresh_scores_trigger() returns trigger language plpgsql security definer as $$ begin
-  perform public.refresh_final_scores(); return coalesce(new, old);
+  perform public.refresh_final_scores(); return null;
 end; $$;
+create trigger refresh_scores_after_team after insert on public.teams for each statement execute function public.refresh_scores_trigger();
 create trigger refresh_scores_after_github_stats after insert or update or delete on public.github_stats for each statement execute function public.refresh_scores_trigger();
 create trigger refresh_scores_after_tech after insert or update or delete on public.tech_evaluations for each statement execute function public.refresh_scores_trigger();
 create trigger refresh_scores_after_jury after insert or update or delete on public.jury_evaluations for each statement execute function public.refresh_scores_trigger();
+
+-- Internal functions must not be callable through the public PostgREST RPC API.
+alter function public.refresh_final_scores() set search_path = public;
+alter function public.refresh_scores_trigger() set search_path = public;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+revoke all on function public.refresh_final_scores() from public, anon, authenticated;
+revoke all on function public.refresh_scores_trigger() from public, anon, authenticated;
+grant execute on function public.refresh_final_scores() to service_role;
