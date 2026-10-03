@@ -55,6 +55,8 @@ alter table public.final_scores enable row level security;
 
 create policy "public leaderboard readable" on public.teams for select using (true);
 create policy "public stats readable" on public.github_stats for select using (true);
+create policy "admins insert GitHub stats" on public.github_stats for insert with check (exists (select 1 from public.participants p where p.id = auth.uid() and p.role = 'admin'));
+create policy "admins update GitHub stats" on public.github_stats for update using (exists (select 1 from public.participants p where p.id = auth.uid() and p.role = 'admin')) with check (exists (select 1 from public.participants p where p.id = auth.uid() and p.role = 'admin'));
 create policy "public scores readable" on public.final_scores for select using (true);
 create policy "users read profiles" on public.participants for select using (auth.uid() = id);
 create policy "users update own profile" on public.participants for update using (auth.uid() = id);
