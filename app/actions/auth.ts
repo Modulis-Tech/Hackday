@@ -14,7 +14,7 @@ export async function signUp(_: FormState, formData: FormData): Promise<FormStat
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, github_username } } });
   if (error) return { error: error.message };
-  if (data.user && data.session) { const { error: profileError } = await supabase.from("participants").insert({ id: data.user.id, name, github_username, role: "participant" }); if (profileError) return { error: profileError.message }; redirect("/dashboard"); }
+  if (data.user && data.session) redirect("/dashboard");
   return { message: "Vérifiez votre boîte e-mail pour confirmer votre inscription." };
 }
 export async function signOut() { const supabase = await createClient(); await supabase.auth.signOut(); redirect("/"); }

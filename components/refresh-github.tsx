@@ -1,0 +1,4 @@
+"use client";
+import { useState } from "react";
+import { RefreshCw } from "lucide-react";
+export function RefreshGithub() { const [message, setMessage] = useState<string>(); const [loading, setLoading] = useState(false); async function refresh() { setLoading(true); setMessage(undefined); const response = await fetch("/api/github/sync", { method: "POST" }); const data = await response.json(); setLoading(false); setMessage(response.ok ? `${data.synced} équipe(s) synchronisée(s).` : data.error ?? "Synchronisation impossible."); } return <><button className="btn-primary" onClick={refresh} disabled={loading}><RefreshCw size={17} className={loading ? "animate-spin" : ""}/>{loading ? "Synchronisation…" : "Synchroniser GitHub"}</button>{message && <p className="mt-3 text-sm text-stone-300">{message}</p>}</>; }
